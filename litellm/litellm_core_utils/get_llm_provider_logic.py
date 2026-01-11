@@ -340,7 +340,13 @@ def get_llm_provider(  # noqa: PLR0915
             custom_llm_provider = "claude_code"
         ## anthropic
         elif model in litellm.anthropic_models:
-            if litellm.AnthropicTextConfig._is_anthropic_text_model(model):
+            # Check if we should route all Anthropic models to ClaudeCode
+            import os
+            route_to_claude_code = os.getenv("LITELLM_ROUTE_ANTHROPIC_TO_CLAUDE_CODE", "False").lower() in ("true", "1", "yes")
+
+            if route_to_claude_code and not litellm.AnthropicTextConfig._is_anthropic_text_model(model):
+                custom_llm_provider = "claude_code"
+            elif litellm.AnthropicTextConfig._is_anthropic_text_model(model):
                 custom_llm_provider = "anthropic_text"
             else:
                 custom_llm_provider = "anthropic"
