@@ -203,6 +203,7 @@ databricks_key: Optional[str] = None
 openai_like_key: Optional[str] = None
 azure_key: Optional[str] = None
 anthropic_key: Optional[str] = None
+claude_code_key: Optional[str] = None
 replicate_key: Optional[str] = None
 bytez_key: Optional[str] = None
 cohere_key: Optional[str] = None
@@ -1288,6 +1289,7 @@ if TYPE_CHECKING:
     from .llms.datarobot.chat.transformation import DataRobotConfig as DataRobotConfig
     from .llms.anthropic.chat.transformation import AnthropicConfig as AnthropicConfig
     from .llms.anthropic.completion.transformation import AnthropicTextConfig as AnthropicTextConfig
+    from .llms.claude_code.chat.transformation import ClaudeCodeConfig as ClaudeCodeConfig
     from .llms.groq.stt.transformation import GroqSTTConfig as GroqSTTConfig
     from .llms.triton.completion.transformation import TritonConfig as TritonConfig
     from .llms.triton.completion.transformation import TritonGenerateConfig as TritonGenerateConfig

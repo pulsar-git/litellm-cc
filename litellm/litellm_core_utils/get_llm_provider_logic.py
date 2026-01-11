@@ -335,6 +335,9 @@ def get_llm_provider(  # noqa: PLR0915
             custom_llm_provider = "openai"
         elif model in litellm.open_ai_text_completion_models:
             custom_llm_provider = "text-completion-openai"
+        ## claude_code
+        elif model.startswith("claude-code/"):
+            custom_llm_provider = "claude_code"
         ## anthropic
         elif model in litellm.anthropic_models:
             if litellm.AnthropicTextConfig._is_anthropic_text_model(model):

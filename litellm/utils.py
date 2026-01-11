@@ -7426,6 +7426,7 @@ class ProviderConfigManager:
             # Format: (factory_function, needs_model_parameter: bool)
             LlmProviders.OPENAI: (lambda: litellm.OpenAIGPTConfig(), False),
             LlmProviders.ANTHROPIC: (lambda: litellm.AnthropicConfig(), False),
+            LlmProviders.CLAUDE_CODE: (lambda: litellm.ClaudeCodeConfig(), False),
             LlmProviders.AZURE: (lambda model: ProviderConfigManager._get_azure_config(model), True),
             LlmProviders.AZURE_AI: (lambda model: ProviderConfigManager._get_azure_ai_config(model), True),
             LlmProviders.VERTEX_AI: (lambda model: ProviderConfigManager._get_vertex_ai_config(model), True),

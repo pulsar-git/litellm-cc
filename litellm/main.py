@@ -170,6 +170,7 @@ from .litellm_core_utils.prompt_templates.factory import (
 )
 from .litellm_core_utils.streaming_chunk_builder_utils import ChunkProcessor
 from .llms.anthropic.chat import AnthropicChatCompletion
+from .llms.claude_code.chat.handler import ClaudeCodeChatCompletion
 from .llms.azure.audio_transcriptions import AzureAudioTranscription
 from .llms.azure.azure import AzureChatCompletion, _check_dynamic_azure_params
 from .llms.azure.chat.o_series_handler import AzureOpenAIO1ChatCompletion
@@ -262,6 +263,7 @@ sap_gen_ai_hub_chat_completions = GenAIHubOrchestration()
 sap_gen_ai_hub_emb = GenAIHubOrchestration()
 azure_ai_embedding = AzureAIEmbedding()
 anthropic_chat_completions = AnthropicChatCompletion()
+claude_code_chat_completions = ClaudeCodeChatCompletion()
 azure_anthropic_chat_completions = AzureAnthropicChatCompletion()
 azure_chat_completions = AzureChatCompletion()
 azure_o1_chat_completions = AzureOpenAIO1ChatCompletion()
@@ -2628,6 +2630,62 @@ def completion(  # type: ignore # noqa: PLR0915
                 litellm_params=litellm_params,
                 logger_fn=logger_fn,
                 encoding=_get_encoding(),  # for calculating input/output tokens
+                api_key=api_key,
+                logging_obj=logging,
+                headers=headers,
+                timeout=timeout,
+                client=client,
+                custom_llm_provider=custom_llm_provider,
+            )
+            if optional_params.get("stream", False) or acompletion is True:
+                ## LOGGING
+                logging.post_call(
+                    input=messages,
+                    api_key=api_key,
+                    original_response=response,
+                )
+            response = response
+        elif custom_llm_provider == "claude_code":
+            api_key = (
+                api_key
+                or litellm.claude_code_key
+                or litellm.api_key
+                or os.environ.get("CLAUDE_CODE_API_KEY")
+            )
+            custom_prompt_dict = custom_prompt_dict or litellm.custom_prompt_dict
+
+            api_base = (
+                api_base
+                or litellm.api_base
+                or get_secret("CLAUDE_CODE_API_BASE")
+                or "https://api.anthropic.com/v1/messages"
+            )
+
+            # Handle URL suffix
+            disable_url_suffix = get_secret_bool("LITELLM_CLAUDE_CODE_DISABLE_URL_SUFFIX")
+            if (
+                api_base is not None
+                and not disable_url_suffix
+                and not api_base.endswith("/v1/messages")
+            ):
+                api_base += "/v1/messages"
+
+            # Strip claude-code/ prefix from model name
+            if model.startswith("claude-code/"):
+                model = model.replace("claude-code/", "", 1)
+
+            response = claude_code_chat_completions.completion(
+                model=model,
+                messages=messages,
+                api_base=api_base,
+                acompletion=acompletion,
+                custom_prompt_dict=litellm.custom_prompt_dict,
+                model_response=model_response,
+                print_verbose=print_verbose,
+                optional_params=optional_params,
+                litellm_params=litellm_params,
+                logger_fn=logger_fn,
+                encoding=_get_encoding(),
                 api_key=api_key,
                 logging_obj=logging,
                 headers=headers,
