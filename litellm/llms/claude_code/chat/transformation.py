@@ -23,6 +23,19 @@ class ClaudeCodeConfig(AnthropicConfig):
     def custom_llm_provider(self) -> Optional[str]:
         return "claude_code"
 
+    def get_supported_openai_params(self, model: str) -> List[str]:
+        """
+        Override to delegate to Anthropic's param support.
+        This ensures ClaudeCode supports all Anthropic params (including reasoning_effort).
+        """
+        # Get params from parent but pass 'anthropic' as provider for support checks
+        # This allows us to inherit all Anthropic capabilities
+        from litellm.llms.anthropic.chat.transformation import AnthropicConfig
+
+        # Create a temporary Anthropic config instance to get supported params
+        anthropic_config = AnthropicConfig()
+        return anthropic_config.get_supported_openai_params(model=model)
+
     def transform_request(
         self,
         model: str,
@@ -33,6 +46,7 @@ class ClaudeCodeConfig(AnthropicConfig):
     ) -> dict:
         """
         Override to inject ClaudeCode system prompt before user system messages.
+        Also strips cache_control from thinking blocks (not supported by Anthropic API).
         """
         # Get base transformation
         data = super().transform_request(
@@ -54,6 +68,31 @@ class ClaudeCodeConfig(AnthropicConfig):
             data["system"] = [claude_code_system_msg] + data["system"]
         else:
             data["system"] = [claude_code_system_msg]
+
+        # Strip cache_control from thinking blocks in messages
+        # Anthropic API error: "messages.X.content.Y.thinking.cache_control: Extra inputs are not permitted"
+        if "messages" in data and isinstance(data["messages"], list):
+            for message in data["messages"]:
+                if isinstance(message, dict) and "content" in message:
+                    content = message["content"]
+                    if isinstance(content, list):
+                        for i, block in enumerate(content):
+                            if isinstance(block, dict) and block.get("type") == "thinking":
+                                if "cache_control" in block:
+                                    # Remove cache_control from thinking blocks
+                                    content[i] = {k: v for k, v in block.items() if k != "cache_control"}
+
+        # Fix thinking.enabled.budget_tokens if it's below Anthropic's minimum of 1024
+        # Anthropic API error: "thinking.enabled.budget_tokens: Input should be greater than or equal to 1024"
+        if "thinking" in data and isinstance(data["thinking"], dict):
+            thinking_param = data["thinking"]
+            if thinking_param.get("type") == "enabled":
+                budget_tokens = thinking_param.get("budget_tokens", 0)
+                if budget_tokens < 1024:
+                    litellm.verbose_logger.warning(
+                        f"ClaudeCode: Increasing thinking.budget_tokens from {budget_tokens} to 1024 (Anthropic minimum)"
+                    )
+                    thinking_param["budget_tokens"] = 1024
 
         return data
 

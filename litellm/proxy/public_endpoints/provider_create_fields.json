@@ -228,6 +228,34 @@
     "default_model_placeholder": "claude-3-opus"
   },
   {
+    "provider": "ClaudeCode",
+    "provider_display_name": "Claude Code",
+    "litellm_provider": "claude_code",
+    "credential_fields": [
+      {
+        "key": "api_key",
+        "label": "API Key",
+        "placeholder": "sk-ant-",
+        "tooltip": "Claude Code OAuth token",
+        "required": true,
+        "field_type": "password",
+        "options": null,
+        "default_value": null
+      },
+      {
+        "key": "api_base",
+        "label": "API Base",
+        "placeholder": "https://api.anthropic.com",
+        "tooltip": "Optional - defaults to https://api.anthropic.com",
+        "required": false,
+        "field_type": "text",
+        "options": null,
+        "default_value": null
+      }
+    ],
+    "default_model_placeholder": "claude-code/claude-3-5-sonnet-20241022"
+  },
+  {
     "provider": "ANTHROPIC_TEXT",
     "provider_display_name": "Anthropic Text",
     "litellm_provider": "anthropic_text",
