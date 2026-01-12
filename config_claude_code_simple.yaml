@@ -1,0 +1,38 @@
+# Simple config - routes ALL Anthropic models to claude_code using environment variable
+# Set this environment variable before starting LiteLLM:
+# export LITELLM_ROUTE_ANTHROPIC_TO_CLAUDE_CODE=True
+# export CLAUDE_CODE_API_KEY=sk-ant-oat01-...
+
+model_list:
+  # With LITELLM_ROUTE_ANTHROPIC_TO_CLAUDE_CODE=True, you can use standard Anthropic model names
+  # and they'll automatically route to claude_code provider
+
+  # Example: Just list the models you want to expose
+  - model_name: claude-opus-4-5
+    litellm_params:
+      model: claude-opus-4-5-20251101
+      api_key: os.environ/CLAUDE_CODE_API_KEY
+
+  - model_name: claude-sonnet-4-5
+    litellm_params:
+      model: claude-sonnet-4-5-20250929
+      api_key: os.environ/CLAUDE_CODE_API_KEY
+
+  - model_name: claude-haiku-4-5
+    litellm_params:
+      model: claude-haiku-4-5-20251001
+      api_key: os.environ/CLAUDE_CODE_API_KEY
+
+  - model_name: claude-3-5-sonnet
+    litellm_params:
+      model: claude-3-5-sonnet-20241022
+      api_key: os.environ/CLAUDE_CODE_API_KEY
+
+  - model_name: claude-3-5-haiku
+    litellm_params:
+      model: claude-3-5-haiku-20241022
+      api_key: os.environ/CLAUDE_CODE_API_KEY
+
+# Optional proxy settings
+# litellm_settings:
+#   set_verbose: True  # Enable debug logging
